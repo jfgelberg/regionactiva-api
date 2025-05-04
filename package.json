@@ -1,0 +1,7 @@
+{
+    "name": "regionactiva-api",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "API serverless para consultar clima desde Meteostat via RapidAPI",
+    "license": "MIT"
+  }  
