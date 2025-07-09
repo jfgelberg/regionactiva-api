@@ -3,8 +3,6 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  METEOSTAT_API_KEY=2c60a9a0a8msh29844562b8c4db9p16acc3jsn153dca1865e6
-
   const { lat, lon, start, end } = req.query;
 
   const apiKey = process.env.METEOSTAT_API_KEY;
