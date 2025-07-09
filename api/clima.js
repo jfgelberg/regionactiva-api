@@ -7,15 +7,13 @@ export default async function handler(req, res) {
   const apiKey = process.env.METEOSTAT_API_KEY;
 
   console.log('🔐 API Key:', apiKey);
-  console.log('📍 Lat/Lon:', lat, lon);
-  console.log('📅 Fechas:', start, end);
+  console.log('🌐 URL:', `https://api.meteostat.net/v2/point/monthly?lat=${lat}&lon=${lon}&start=${start}&end=${end}`);
 
   if (!lat || !lon || !start || !end || !apiKey) {
     return res.status(400).json({ error: 'Faltan parámetros o API key no configurada' });
   }
 
   const url = `https://api.meteostat.net/v2/point/monthly?lat=${lat}&lon=${lon}&start=${start}&end=${end}`;
-  console.log('🌐 URL:', url);
 
   try {
     const response = await fetch(url, {
@@ -24,12 +22,14 @@ export default async function handler(req, res) {
       },
     });
 
-    const result = await response.json();
-    console.log('📦 Respuesta Meteostat:', result);
-
-    if (!result?.data || !Array.isArray(result.data)) {
-      return res.status(500).json({ error: 'Respuesta inválida de Meteostat' });
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const html = await response.text();
+      console.error('❌ Respuesta inesperada:', html.slice(0, 100));
+      return res.status(500).json({ error: 'Respuesta inesperada de la API externa' });
     }
+
+    const result = await response.json();
 
     const adaptado = result.data.map((mes) => ({
       tavg: mes.tavg ?? null,
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
       tmax: mes.tmax ?? null,
       prcp: mes.prcp ?? null,
       wspd: mes.wspd !== null && mes.wspd !== undefined
-        ? Number((mes.wspd * 3.6).toFixed(1))
+        ? Number((mes.wspd * 3.6).toFixed(1)) // m/s a km/h
         : null,
     }));
 
