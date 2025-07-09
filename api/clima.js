@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*'); // permitir todos los orígenes (o usar https://regionactiva.com)
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -23,9 +23,20 @@ export default async function handler(req, res) {
       },
     });
 
-    const data = await response.json();
-    return res.status(200).json(data);
+    const result = await response.json();
 
+    // Transformar datos
+    const adaptado = result.data.map((mes) => ({
+      tavg: mes.tavg ?? null,
+      tmin: mes.tmin ?? null,
+      tmax: mes.tmax ?? null,
+      prcp: mes.prcp ?? null,
+      wspd: mes.wspd !== null && mes.wspd !== undefined
+        ? Number((mes.wspd * 3.6).toFixed(1)) // convertir m/s a km/h
+        : null,
+    }));
+
+    return res.status(200).json({ data: adaptado });
   } catch (error) {
     console.error('Error al consultar Meteostat:', error);
     return res.status(500).json({ error: 'Error interno del servidor' });
