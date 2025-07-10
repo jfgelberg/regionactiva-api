@@ -1,4 +1,3 @@
-regionactiva-api/api/clima.js
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*'); // permitir todos los orígenes (o usar https://regionactiva.com)
   res.setHeader('Access-Control-Allow-Methods', 'GET');
