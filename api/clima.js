@@ -16,6 +16,7 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(url, {
+      method: 'GET',
       headers: {
         'x-rapidapi-host': rapidApiHost,
         'x-rapidapi-key': rapidApiKey,
@@ -24,23 +25,24 @@ export default async function handler(req, res) {
 
     const result = await response.json();
 
+    // Validación y adaptación
     if (!result?.data || !Array.isArray(result.data)) {
-      return res.status(500).json({ error: 'Respuesta inesperada de la API externa' });
+      return res.status(500).json({ error: 'Respuesta inesperada de la API externa', detalle: result });
     }
 
+    // Adaptar los campos necesarios
     const adaptado = result.data.map((mes) => ({
+      date: mes.date ?? null,
       tavg: mes.tavg ?? null,
       tmin: mes.tmin ?? null,
       tmax: mes.tmax ?? null,
       prcp: mes.prcp ?? null,
-      wspd: mes.wspd !== null && mes.wspd !== undefined
-        ? Number((mes.wspd * 3.6).toFixed(1))  // m/s a km/h
-        : null,
+      wspd: typeof mes.wspd === 'number' ? Number((mes.wspd * 3.6).toFixed(1)) : null, // m/s a km/h
     }));
 
     return res.status(200).json({ data: adaptado });
   } catch (error) {
-    console.error('❌ Error al consultar Meteostat:', error);
-    return res.status(500).json({ error: 'Error interno del servidor' });
+    console.error('❌ Error al consultar RapidAPI Meteostat:', error);
+    return res.status(500).json({ error: 'Error interno del servidor', detalle: error.message });
   }
 }
